@@ -3,6 +3,7 @@
 #Google PageRank Algorithm Implementation
 
 import csv
+import operator
 
 with open("hollins.dat", "r") as data:
     reader = csv.reader(data, delimiter = ' ', skipinitialspace=True)
@@ -92,4 +93,15 @@ def PageRank(verts, initVec, outgoing, damp) :
         print("success!")
         return nextVector
 
-PageRank(V, initialVector, N, .85)
+finalRank = PageRank(V, initialVector, N, .85)
+finalRankDict = {}
+
+#Now we need to create a printable list
+#First we make finalRank a dictionary of index : rank
+for i in range(1,len(finalRank)) :
+    finalRankDict[i] = finalRank[i]
+    
+#now sort these by rank, in descending order; format is a list of (index, rank) tuples
+sortedRanks = sorted(finalRankDict.items(), key=operator.itemgetter(1), reverse=True)
+
+#Need to print these in order by searching through the urls dictionary
