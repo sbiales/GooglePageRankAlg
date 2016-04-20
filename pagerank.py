@@ -4,6 +4,7 @@
 
 import csv
 import operator
+import numpy as np
 
 with open("hollins.dat", "r") as data:
     reader = csv.reader(data, delimiter = ' ', skipinitialspace=True)
@@ -55,19 +56,28 @@ with open("hollins.dat", "r") as data:
     #        if i in destinations[j] :           #if i is in the list of destinations
     #            P[(i,j)] = 1/N[j]               #add 1/n_j to the matrix at (i,j)
 
-    #Make vector (list) N to store all n_j values
-    N = []
+    #Initialize an array/matrix P
+    P = np.zeros(V,V)
+
+    #populate the matrix
     for j in range(0,V) :
-        if j in destinations :                   #need to check if it's in the dict
-            N.append(len(destinations[j]))
-        else :
-            N.append(0)
+        for i in range(0,V) :
+            if i in destinations[j] :
+                P[j][i] = 1/len(destinations[j])
+
+    P = P*damp + (1-damp)                       #modify P w/ dampening factor
+
+    #Make vector (list) N to store all n_j values
+    #N = []
+    #for j in range(0,V) :
+    #    if j in destinations :                   #need to check if it's in the dict
+    #        N.append(len(destinations[j]))
+    #    else :
+    #        N.append(0)
 
 #Time to rank the pages!
 #PR(V, initialVector, N, damp)
 def PageRank(verts, initVec, outgoing, damp) :
-
-    #P[(i,j)] = P[(i,j)]*damp + (1-damp) #modify P w/ dampening factor
         
     nextVector = initVec
     for a in range(0,verts) :
