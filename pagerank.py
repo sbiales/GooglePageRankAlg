@@ -18,7 +18,7 @@ with open("hollins.dat", "r") as data:
     #create a dictionary of the index : url
     urls = {}
 
-    #create a dictionary of the source nodes (j) : all destination nodes (i)
+    #create a dictionary of the source nodes (i) : all destination nodes (j)
     destinations = {}
 
     #also create the reverse dict, with destinations : source pages which link to it    
@@ -44,28 +44,14 @@ with open("hollins.dat", "r") as data:
     for n in range(0,V) :
         initialVector.append(1/V)          #initialize the vector
 
-    #initialize a dict of tuples as our matrix P
-    #P = {}
-    #for i in range(0,V) :
-    #    for j in range(0,V) :
-    #        P[(i,j)] = 0
-
-    #iterate through and populate the matrix P
-    #for j in range(0,V) :
-    #    for i in range(0,V) :
-    #        if i in destinations[j] :           #if i is in the list of destinations
-    #            P[(i,j)] = 1/N[j]               #add 1/n_j to the matrix at (i,j)
-
     #Initialize an array/matrix P
     P = np.zeros(V,V)
 
     #populate the matrix
-    for j in range(0,V) :
-        for i in range(0,V) :
+    for i in range(0,V) :
+        for j in range(0,V) :
             if i in destinations[j] :
-                P[j][i] = 1/len(destinations[j])
-
-    P = P*damp + (1-damp)                       #modify P w/ dampening factor
+                P[i][j] = 1/len(destinations[i])
 
     #Make vector (list) N to store all n_j values
     #N = []
@@ -78,23 +64,29 @@ with open("hollins.dat", "r") as data:
 #Time to rank the pages!
 #PR(V, initialVector, N, damp)
 def PageRank(verts, initVec, outgoing, damp) :
-        
-    nextVector = initVec
-    for a in range(0,verts) :
-        total = 0
-        if a in sources :                       #first check if a exists
-            links = sources[a]                  #links contains list of pages linking to page a
-        else :
-            continue                            #if not in sources, move on
-        for j in links :
-            try:
-                if ((outgoing[j] !=0) & (initVec[j] !=0)) :
-                    total += initVec[j]/outgoing[j] #add page rank/outbound links    
-            except IndexError:
-                print("error on j = ", j)
-                break
 
-            nextVector[a] = ((1-damp) + damp*total)
+    #P = P*damp + (1-damp)                       #modify P w/ dampening factor
+        
+    for i in range(0, verts) :
+        total = 0
+        for j in range(0, verts) :
+            initVec[j]*P[i][j]
+    
+    #for a in range(0,verts) :
+    #    total = 0
+    #    if a in sources :                       #first check if a exists
+    #        links = sources[a]                  #links contains list of pages linking to page a
+    #    else :
+    #        continue                            #if not in sources, move on
+    #    for j in links :
+    #        try:
+    #            if ((outgoing[j] !=0) & (initVec[j] !=0)) :
+    #                total += initVec[j]/outgoing[j] #add page rank/outbound links    
+    #        except IndexError:
+    #            print("error on j = ", j)
+    #            break
+    #
+    #        nextVector[a] = ((1-damp) + damp*total)
     print(nextVector)
     
     if (initVec != nextVector) :
