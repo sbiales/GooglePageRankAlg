@@ -6,7 +6,7 @@ import csv
 import operator
 import numpy as np
 
-with open("hollins.dat", "r") as data:
+with open("test.dat", "r") as data:
     reader = csv.reader(data, delimiter = ' ', skipinitialspace=True)
 
     cols = next(reader)
@@ -83,7 +83,7 @@ for i in range(len(finalRank)) :
     string = str(finalRank[i])          #keys need to be a string
     string = string[:10]                #truncate to length 10
     rankOrder[string] = i
-print(list(rankOrder.keys())[0])
+print("rankOrder keys",list(rankOrder.keys()))
 
 #now write the answer to a text file
 file = open("ranking.txt", "w")
@@ -91,13 +91,15 @@ file = open("ranking.txt", "w")
 #need to print out in order of max to min keys of the dict
 #we sort finalRank from min to max
 finalRank.sort()
+print("finalRank sorted", finalRank)
 
 for i in finalRank :
     index = finalRank.pop()
     index = str(index)                  #cast the index to a string
     index = index[:10]                  #truncate to length 10
-    print(index)
-    file.write(index, urls[index])
+    print(type(index))
+    line = index + ' ' + urls[rankOrder[index]]
+    file.write(line)
 
 file.close()
 
