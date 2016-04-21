@@ -80,7 +80,10 @@ finalRank = PageRank(P, initialVector, .85, incoming)
 #turn this into a dictionary of final rank value : index
 rankOrder = {}
 for i in range(len(finalRank)) :
-    rankOrder[finalRank[i]] = i
+    string = str(finalRank[i])          #keys need to be a string
+    string = string[:10]                #truncate to length 10
+    rankOrder[string] = i
+print(list(rankOrder.keys())[0])
 
 #now write the answer to a text file
 file = open("ranking.txt", "w")
@@ -91,6 +94,9 @@ finalRank.sort()
 
 for i in finalRank :
     index = finalRank.pop()
+    index = str(index)                  #cast the index to a string
+    index = index[:10]                  #truncate to length 10
+    print(index)
     file.write(index, urls[index])
 
 file.close()
