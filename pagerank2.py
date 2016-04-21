@@ -77,5 +77,21 @@ def PageRank(trans, initVec, damp, incoming, n=0) :
     
 finalRank = PageRank(P, initialVector, .85, incoming)
 
+#turn this into a dictionary of final rank value : index
+rankOrder = {}
+for i in range(len(finalRank)) :
+    rankOrder[finalRank[i]] = i
+
 #now write the answer to a text file
 file = open("ranking.txt", "w")
+
+#need to print out in order of max to min keys of the dict
+#we sort finalRank from min to max
+finalRank.sort()
+
+for i in finalRank :
+    index = finalRank.pop()
+    file.write(index, urls[index])
+
+file.close()
+
