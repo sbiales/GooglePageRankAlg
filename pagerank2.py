@@ -18,8 +18,11 @@ with open("hollins.dat", "r") as data:
     #create a dictionary of the index : url
     urls = {}
 
-    #create a dictionary of the source nodes (i) : all destination nodes (j)
-    outgoing = [[] for i in range(V)]
+    #create a list to know how many values in each outgoing node
+    outgoing = [0 for i in range(V)]
+
+    #also create a set so that if there are multiple links, you don't double count
+    incoming = [set() for i in range(V)]
 
     #add every node to the dictionary
     for n in range(0,V) :
@@ -31,9 +34,10 @@ with open("hollins.dat", "r") as data:
         line = next(reader)             #read the next line from the file
         src = int(line[0])
         dst = int(line[1])
-        #if the key has no value, set the value to an empty list
-        #then append the destination node to the list
-        outgoing[src-1].append(dst-1)
+        #add one to the number of outgoing links
+        outgoing[src-1] += 1
+        #add the source node to the set of sources for this destination
+        incoming[dst-1].add(src-1)
 
     #create initial state vector p(0)
     initialVector = []
@@ -45,29 +49,33 @@ with open("hollins.dat", "r") as data:
     P = np.zeros((V,V))
 
     #populate the matrix
-    for i in range(0,V) :
-        for j in range(0,V) :
-            if i in outgoing[j] :
-                P[i][j] = 1/len(outgoing[j])
+    for i in range(V) :
+        #only care about when we have outgoing links from j to i
+        #incoming[i] holds a set of all nodes (j) which link to i
+        for j in incoming[i] :
+                P[i][j] = 1/outgoing[j]
 
-#PR(P, initialVector, damp)
-def PageRank(trans, initVec, damp, n=0) :
+#PR(P, initialVector, damp, incoming, iterations)
+def PageRank(trans, initVec, damp, incoming, n=0) :
 
     length = len(initVec)
     
     nextVector = [0] * length
     
     for i in range(length) :
-        total = sum([initVec[j]*trans[i][j] for j in range(length)])
-        #for j in range(length) :
-        #    total += initVec[j]*trans[i][j]
+        total = 0
+        #use incoming to only look at nonzero locations and lower comp. time
+        for j in incoming[i] :
+            total += initVec[j]*trans[i][j]
         nextVector[i] = (1-damp) + damp*total
     
-    if (initVec != nextVector and n<100) :
-        return PageRank(trans, nextVector, damp, n+1)
+    if (initVec != nextVector and n<1000) :
+        return PageRank(trans, nextVector, damp, incoming, n+1)
     else :
-        print("success!")
+        print("success!", n)
         return nextVector
     
-finalRank = PageRank(P, initialVector, .85)
-print(finalRank)
+finalRank = PageRank(P, initialVector, .85, incoming)
+
+#now write the answer to a text file
+file = open("ranking.txt", "w")
