@@ -52,14 +52,16 @@ with open("hollins.dat", "r") as data:
 
 #PR(P, initialVector, damp)
 def PageRank(trans, initVec, damp, n=0) :
+
+    length = len(initVec)
     
-    nextVector = []
+    nextVector = [0] * length
     
-    for i in range(len(initVec)) :
-        total = 0
-        for j in range(len(initVec)) :
-            total += initVec[j]*trans[i][j]
-        nextVector.append((1-damp) + damp*total)
+    for i in range(length) :
+        total = sum([initVec[j]*trans[i][j] for j in range(length)])
+        #for j in range(length) :
+        #    total += initVec[j]*trans[i][j]
+        nextVector[i] = (1-damp) + damp*total
     
     if (initVec != nextVector and n<100) :
         return PageRank(trans, nextVector, damp, n+1)
