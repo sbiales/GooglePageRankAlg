@@ -6,7 +6,27 @@ import csv
 import operator
 import numpy as np
 
-with open("test.dat", "r") as data:
+#PR(P, initialVector, damp, incoming, iterations)
+#The 'n' variable allows the number of iterations to be limited, but isn't necessary
+def PageRank(trans, initVec, damp, incoming, n=0) :
+
+    length = len(initVec)
+    
+    nextVector = [0] * length
+    
+    for i in range(length) :
+        total = 0
+        #use incoming to only look at nonzero locations and lower comp. time
+        for j in incoming[i] :
+            total += initVec[j]*trans[i][j]
+        nextVector[i] = (1-damp) + damp*total
+    
+    if (initVec != nextVector and n<1000) :
+        return PageRank(trans, nextVector, damp, incoming, n+1)
+    else :
+        return nextVector
+
+with open("hollins.dat", "r") as data:
     reader = csv.reader(data, delimiter = ' ', skipinitialspace=True)
 
     cols = next(reader)
@@ -25,12 +45,12 @@ with open("test.dat", "r") as data:
     incoming = [set() for i in range(V)]
 
     #add every node to the dictionary
-    for n in range(0,V) :
+    for n in range(V) :
         line = next(reader)             #read the next line from the file
         index = int(line[0])            #cast the index to an integer
         urls[index] = line[1]           #add the data to the dictionary
 
-    for n in range(0, E) :
+    for n in range(E) :
         line = next(reader)             #read the next line from the file
         src = int(line[0])
         dst = int(line[1])
@@ -41,7 +61,7 @@ with open("test.dat", "r") as data:
 
     #create initial state vector p(0)
     initialVector = []
-    for n in range(0,V) :
+    for n in range(V) :
         initialVector.append(1/V)          #initialize the vector
 
 
@@ -54,52 +74,23 @@ with open("test.dat", "r") as data:
         #incoming[i] holds a set of all nodes (j) which link to i
         for j in incoming[i] :
                 P[i][j] = 1/outgoing[j]
-
-#PR(P, initialVector, damp, incoming, iterations)
-def PageRank(trans, initVec, damp, incoming, n=0) :
-
-    length = len(initVec)
-    
-    nextVector = [0] * length
-    
-    for i in range(length) :
-        total = 0
-        #use incoming to only look at nonzero locations and lower comp. time
-        for j in incoming[i] :
-            total += initVec[j]*trans[i][j]
-        nextVector[i] = (1-damp) + damp*total
-    
-    if (initVec != nextVector and n<1000) :
-        return PageRank(trans, nextVector, damp, incoming, n+1)
-    else :
-        print("success!", n)
-        return nextVector
     
 finalRank = PageRank(P, initialVector, .85, incoming)
 
-#turn this into a dictionary of final rank value : index
-rankOrder = {}
+#create a list of tuples (rank, index)
+sortedRank = []
 for i in range(len(finalRank)) :
-    string = str(finalRank[i])          #keys need to be a string
-    string = string[:10]                #truncate to length 10
-    rankOrder[string] = i
-print("rankOrder keys",list(rankOrder.keys()))
+    sortedRank.append((finalRank[i], i))
+sortedRank.sort()                       #sorts the list by rank from min to max
+sortedRank.reverse()                    #changes it from max to min
 
 #now write the answer to a text file
-file = open("ranking.txt", "w")
+with open("ranking.txt", "w") as file :
 
-#need to print out in order of max to min keys of the dict
-#we sort finalRank from min to max
-finalRank.sort()
-print("finalRank sorted", finalRank)
-
-for i in finalRank :
-    index = finalRank.pop()
-    index = str(index)                  #cast the index to a string
-    index = index[:10]                  #truncate to length 10
-    print(type(index))
-    line = index + ' ' + urls[rankOrder[index]]
-    file.write(line)
-
-file.close()
+    #Printing
+    for i in sortedRank :
+        rank = i[0]
+        index = i[1] + 1
+        line = str(index) + ' ' + str(rank) + ' ' + urls[index] + '\n'    #print index, rank, url
+        file.write(line)
 
